@@ -102,7 +102,19 @@ tMedianClean <- median(tStepsClean$totalStepsPerDay)
 tMeanClean <- format(round(tMeanClean,2),nsmall = 2)
 tMedianClean <- as.integer(tMedianClean)
 ```
-The mean total number of steps taken per day is 10765.64 and median is 10762
+The mean total number of steps taken per day is 10765.64 and median is 10762.
 Both the mean and median have increase as earlier I have removed the rows containing NAs from the dataset and then made the comuptations. 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+1. Creating a new factor variable isWeekend in the cleaned dataset
+2. Calculating the average of steps taken for each interval over weekdays or weekends and then plotting it using ggplot2.
+
+```r
+library(lubridate)
+activityClean <- mutate(activityClean,isWeekend = factor(ifelse((wday(activity$date) == 7 | wday(activity$date) == 1), 0, 1),labels = c("Weekend","Weekday")))
+tIntervalWeek <- activityClean %>% group_by(interval,isWeekend) %>% summarize(averageSteps = mean(steps,na.rm=TRUE))
+
+ggplot(tIntervalWeek,aes(interval,averageSteps)) + geom_point(col = "blue") + geom_line(col = "blue") + facet_wrap(~ isWeekend, nrow = 2, ncol = 1) + labs(x = "Time Interval", y = "Average Steps", title = "Average Daily Activity Pattern over weekdays or weekends")
+```
+
+![](PA1_template_files/figure-html/weekdayAndWeekend-1.png) 
