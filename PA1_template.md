@@ -46,14 +46,21 @@ activity <- mutate(activity,isWeekend = ifelse((wday(activity$date) == 7 | wday(
 ## What is mean total number of steps taken per day?
 1. Calculate the total number of steps taken per day
 2. Plot the histogram
+3. Calculate the mean and median of total number of steps per day
 
 ```r
-activity_group <- group_by(activity,date)
-tSteps <- summarize(activity_group,totalStepsPerDay = sum(steps),na.rm=TRUE)
+tSteps <- activity %>% group_by(date) %>% summarize(totalStepsPerDay = sum(steps),na.rm=TRUE)
 hist(tSteps$totalStepsPerDay,xlab = "Total Steps Per Day", main = "Histogram of Total number of Steps Per Day")
 ```
 
 ![](PA1_template_files/figure-html/meanSteps-1.png) 
+
+```r
+tMean <- mean(tSteps$totalStepsPerDay,na.rm = TRUE)
+tMedian <- median(tSteps$totalStepsPerDay, na.rm = TRUE)
+tMean <- format(round(tMean,2),nsmall = 2)
+```
+The mean total number of steps taken per day is 10766.19 and median is 10765
 
 ## What is the average daily activity pattern?
 
