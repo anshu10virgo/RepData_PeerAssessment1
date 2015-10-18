@@ -8,11 +8,17 @@
 
 ```r
 activity <- read.csv("./activity.csv")
-library(dplyr)
+activity$date <- as.Date(activity$date)
 ```
 
-```
-## Warning: package 'dplyr' was built under R version 3.1.3
+  
+## What is mean total number of steps taken per day?
+1. Calculate the total number of steps taken per day
+2. Plot the histogram
+3. Calculate the mean and median of total number of steps per day
+
+```r
+library(dplyr)
 ```
 
 ```
@@ -27,25 +33,6 @@ library(dplyr)
 ## 
 ##     intersect, setdiff, setequal, union
 ```
-
-```r
-library(lubridate)
-```
-
-```
-## Warning: package 'lubridate' was built under R version 3.1.3
-```
-
-```r
-activity$date <- as.Date(activity$date)
-activity <- mutate(activity,isWeekend = ifelse((wday(activity$date) == 7 | wday(activity$date) == 1), "Weekend", "Weekday"))
-```
-
-  
-## What is mean total number of steps taken per day?
-1. Calculate the total number of steps taken per day
-2. Plot the histogram
-3. Calculate the mean and median of total number of steps per day
 
 ```r
 tSteps <- activity %>% group_by(date) %>% summarize(totalStepsPerDay = sum(steps, na.rm = TRUE))
@@ -69,13 +56,6 @@ The mean total number of steps taken per day is 9354.23 and median is 10395
 ```r
 tInterval <- activity %>% group_by(interval) %>% summarize(averageSteps = mean(steps,na.rm=TRUE))
 library(ggplot2)
-```
-
-```
-## Warning: package 'ggplot2' was built under R version 3.1.3
-```
-
-```r
 ggplot(tInterval,aes(interval,averageSteps)) + geom_point(col = "blue") + geom_line(col = "blue") + labs(x = "Time Interval", y = "Average Steps", title = "Average Daily Activity Pattern")
 ```
 
@@ -89,7 +69,40 @@ The interval 835 on average across all the days in the dataset, contains the max
 
   
 ## Imputing missing values
+1. Calculating the total number of missing values in activity data set
 
+```r
+totalMissingVal <- sum(is.na(activity$steps))
+```
+The total number of missing values are 2304
 
+2. Imputing the missing data
+3. Creating a new dataset with no missing value and arranging it
+
+```r
+missingActivity <- filter(activity,is.na(steps))
+nonMissingActivity <- filter(activity,!is.na(steps))
+imputeActivity <- nonMissingActivity %>% group_by(interval) %>% summarize(averageSteps = mean(steps))
+for(i in 1:nrow(missingActivity)) {
+    int_val <- which(imputeActivity == missingActivity$interval[i])
+    missingActivity$steps[i] <- round(imputeActivity$averageSteps[int_val])
+}
+
+activityClean <- rbind(missingActivity,nonMissingActivity)
+activityClean <- arrange(activityClean,date,interval)
+tStepsClean <- activityClean %>% group_by(date) %>% summarize(totalStepsPerDay = sum(steps))
+hist(tStepsClean$totalStepsPerDay,xlab = "Total Steps Per Day", main = "Histogram of Total number of Steps Per Day")
+```
+
+![](PA1_template_files/figure-html/imputeMissingValue-1.png) 
+
+```r
+tMeanClean <- mean(tStepsClean$totalStepsPerDay)
+tMedianClean <- median(tStepsClean$totalStepsPerDay)
+tMeanClean <- format(round(tMeanClean,2),nsmall = 2)
+tMedianClean <- as.integer(tMedianClean)
+```
+The mean total number of steps taken per day is 10765.64 and median is 10762
+Both the mean and median have increase as earlier I have removed the rows containing NAs from the dataset and then made the comuptations. 
 
 ## Are there differences in activity patterns between weekdays and weekends?
