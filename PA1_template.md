@@ -2,12 +2,19 @@
 
 
 ## Loading and preprocessing the data
-1. We load the data
-2. Convert the date into correct date format
-3. Mutate the weekday/weekend column with each row
+1. We check if file exists, else we download the file
+2. We load the data
+3. Convert the date into correct date format
+4. Mutate the weekday/weekend column with each row
 
 ```r
-activity <- read.csv("./activity.csv")
+url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+setInternet2(use = TRUE)
+if(!file.exists("activity.csv")) {
+    download.file(url,"repdata_activity.zip")
+    unzip("repdata_activity.zip")
+}
+activity <- read.csv("activity.csv")
 activity$date <- as.Date(activity$date)
 ```
 
