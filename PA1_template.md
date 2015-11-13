@@ -5,7 +5,7 @@
 1. We check if file exists, else we download the file
 2. We load the data
 3. Convert the date into correct date format
-4. Mutate the weekday/weekend column with each row
+4. Filtering the clean records from the dataset
 
 ```r
 url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
@@ -14,17 +14,6 @@ if(!file.exists("activity.csv")) {
     download.file(url,"repdata_activity.zip")
     unzip("repdata_activity.zip")
 }
-activity <- read.csv("activity.csv")
-activity$date <- as.Date(activity$date)
-```
-
-  
-## What is mean total number of steps taken per day?
-1. Calculate the total number of steps taken per day
-2. Plot the histogram
-3. Calculate the mean and median of total number of steps per day
-
-```r
 library(dplyr)
 ```
 
@@ -42,7 +31,19 @@ library(dplyr)
 ```
 
 ```r
-tSteps <- activity %>% group_by(date) %>% summarize(totalStepsPerDay = sum(steps, na.rm = TRUE))
+activity <- read.csv("activity.csv")
+activity$date <- as.Date(activity$date)
+nonMissingActivity <- filter(activity,!is.na(steps))
+```
+
+  
+## What is mean total number of steps taken per day?
+1. Calculate the total number of steps taken per day
+2. Plot the histogram
+3. Calculate the mean and median of total number of steps per day
+
+```r
+tSteps <- nonMissingActivity %>% group_by(date) %>% summarize(totalStepsPerDay = sum(steps, na.rm = TRUE))
 hist(tSteps$totalStepsPerDay,xlab = "Total Steps Per Day", main = "Histogram of Total number of Steps Per Day")
 ```
 
@@ -53,7 +54,7 @@ tMean <- mean(tSteps$totalStepsPerDay,na.rm = TRUE)
 tMedian <- median(tSteps$totalStepsPerDay, na.rm = TRUE)
 tMean <- format(round(tMean,2),nsmall = 2)
 ```
-The mean total number of steps taken per day is 9354.23 and median is 10395
+The mean total number of steps taken per day is 10766.19 and median is 10765
 
   
 ## What is the average daily activity pattern?
@@ -61,7 +62,7 @@ The mean total number of steps taken per day is 9354.23 and median is 10395
 2. Calculating the interval containing maximum average steps
 
 ```r
-tInterval <- activity %>% group_by(interval) %>% summarize(averageSteps = mean(steps,na.rm=TRUE))
+tInterval <- nonMissingActivity %>% group_by(interval) %>% summarize(averageSteps = mean(steps,na.rm=TRUE))
 library(ggplot2)
 ggplot(tInterval,aes(interval,averageSteps)) + geom_point(col = "blue") + geom_line(col = "blue") + labs(x = "Time Interval", y = "Average Steps", title = "Average Daily Activity Pattern")
 ```
@@ -110,7 +111,7 @@ tMeanClean <- format(round(tMeanClean,2),nsmall = 2)
 tMedianClean <- as.integer(tMedianClean)
 ```
 The mean total number of steps taken per day is 10765.64 and median is 10762.
-Both the mean and median have increase as earlier I have removed the rows containing NAs from the dataset and then made the comuptations. 
+Both the mean and median have decreased as earlier I have removed the rows containing NAs from the dataset and then made the comuptations. 
 
 ## Are there differences in activity patterns between weekdays and weekends?
 1. Creating a new factor variable isWeekend in the cleaned dataset
